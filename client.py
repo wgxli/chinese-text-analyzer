@@ -85,15 +85,22 @@ def display_results(results):
     Displays the given parse results in a graphical window.
     Assumes that `zenity` is installed.
     """
-    try:
-        # Process raw segmentation from the daemon
-        data = [(
-            entry['character'],
-            ' '.join(map(parse_pinyin, entry['pinyin'])),
-            ' · '.join(limit_length(entry['meaning']))
-        ) for entry in results]
-    except ValueError:
-        display_error('Parsing Failed', 'Please make sure that your input contains only simplified Chinese characters.')
+    data = []
+    # Process raw segmentation results from the daemon
+    for entry in results:
+        try:
+            data.append((
+                entry['character'],
+                ' '.join(map(parse_pinyin, entry['pinyin'])),
+                ' · '.join(limit_length(entry['meaning']))
+            ))
+        except ValueError:
+            # Ignore any input that isn't a Chinese character
+            print('Error processing', entry['character'])
+            pass
+
+    if not data:
+        display_error('No Input', 'No Chinese text was detected.')
         sys.exit()
 
     # Flatten data for zenity
@@ -109,7 +116,7 @@ def display_results(results):
         '--list',
         '--title', 'Chinese Analysis',
         '--width', '650',
-        '--height', str(base_height + row_height * len(results)),
+        '--height', str(base_height + row_height * len(data)),
         *([
             '--checklist',
             '--text', 'Select any words to add them to Anki.',
