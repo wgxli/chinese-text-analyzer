@@ -16,6 +16,9 @@ from config import host, port, anki_integration
 base_height = 120 # Height of the popup window without any entries
 row_height = 30 # Height of each entry row
 
+# Character limit for "meaning" column
+meaning_limit = 60
+
 
 def display_error(title, text):
     """Displays the given error message in a GTK window. Requires `zenity`."""
@@ -66,7 +69,7 @@ def parse_pinyin(syllable):
     return ''.join(syllable)
 
 
-def limit_length(definitions, limit=70):
+def limit_length(definitions, limit=meaning_limit):
     """
     Returns an initial sublist (prefix) of `definitions` as long as possible
     without exceeding `limit` characters total.
@@ -115,7 +118,7 @@ def display_results(results):
         'zenity',
         '--list',
         '--title', 'Chinese Analysis',
-        '--width', '650',
+        '--width', '700',
         '--height', str(base_height + row_height * len(data)),
         *([
             '--checklist',
