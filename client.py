@@ -60,7 +60,7 @@ def parse_pinyin(syllable):
     >>> parse_pinyin('yan2')
     'yán'
     """
-    syllable, tone = list(syllable[:-1]), int(syllable[-1])
+    syllable, tone = list(syllable[:-1].replace('u:', 'ü')), int(syllable[-1])
     first_vowel = [(c in 'aeiouü') for c in syllable].index(True)
     syllable[first_vowel] = add_tone(syllable[first_vowel], tone)
     return ''.join(syllable)
