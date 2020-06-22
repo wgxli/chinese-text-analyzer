@@ -9,6 +9,10 @@ import json
 
 from g2pc import G2pC
 
+
+# Address for the local server
+host, port = address = ('localhost', 1337)
+
 # Use G2pC for Chinese segmentation
 segmenter = G2pC()
 
@@ -26,8 +30,11 @@ def process_segment(segment):
 class RequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         # Get the query text.
-        query = unquote(urlparse(self.path).geturl())[1:]
-        print('[query]', query)
+        try:
+            query = unquote(urlparse(self.path).geturl())[1:]
+            print('[query]', query)
+        except:
+            print('[error] Malformed Query')
 
         segments = [
             process_segment(segment)
@@ -39,9 +46,6 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(response.encode())
 
-
-# Address for the local server
-host, port = address = ('localhost', 1337)
 
 daemon = HTTPServer(address, RequestHandler)
 print(f'Web server initialized at {host}:{port}')

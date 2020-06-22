@@ -10,8 +10,13 @@ as well as the following packages on Python 3.6 or higher:
 - requests
 - g2pc
 
+## Usage
+- Start `daemon.py`. You might have to adjust the port (default `1337`) if it's taken.
+- Run `python3 client.py "your Chinese text here"`. This will open the analysis results in a popup window.
+- Running `shortcut.sh` will analyze whatever text is currently selected.
+
 ## Tips
 This is my current setup:
 - Have the daemon (`daemon.py`) run on startup.
 - Bind `shortcut.sh` to a keyboard shortcut.
-This allows quick analysis of whatever text is currently selected.
+This makes looking up words extremely quick. (Just select the text, and press a few keys.)

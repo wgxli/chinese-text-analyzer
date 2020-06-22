@@ -68,6 +68,7 @@ def display_results(results):
         data.append(' '.join(map(parse_pinyin, entry['pinyin'])))
         data.append(' · '.join(limit_length(entry['meaning'])))
 
+    # You may have to alter the height computation below depending on your GTK setup
     subprocess.run([
         'zenity',
         '--list',
