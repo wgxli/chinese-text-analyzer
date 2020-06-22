@@ -1,4 +1,4 @@
-# Chinese Test Analyzer (中文文本分析器)
+# Chinese Text Analyzer (中文文本分析器)
 A basic utility that displays an analysis (word segmentation, pinyin, meaning) of any selected Chinese text.
 ![Screenshot of the program](screenshot.png)
 
