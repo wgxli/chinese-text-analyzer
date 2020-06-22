@@ -4,7 +4,7 @@ A basic utility that displays an analysis (word segmentation, pinyin, meaning) o
 Optional feature: Quickly add detected words to Anki.
 **See the `Anki integration` section below for details.**
 
-![Screenshot of the program](screenshot.png)
+![Screenshot of the program](screenshot-anki.png)
 
 Note: This is a toy project. I've only tested it on my computer (Ubuntu 20.04). Send any bugs to `bug.report@samuelj.li`.
 
