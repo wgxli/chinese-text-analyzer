@@ -1,7 +1,8 @@
 # Chinese Text Analyzer (中文文本分析器)
 A basic utility that displays an analysis (word segmentation, pinyin, meaning) of any selected Chinese text.
 
-Optional feature: Quickly add detected words to Anki. See the `Anki integration` section below for details.
+Optional feature: Quickly add detected words to Anki.
+**See the `Anki integration` section below for details.**
 
 ![Screenshot of the program](screenshot.png)
 

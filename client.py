@@ -17,11 +17,26 @@ base_height = 120 # Height of the popup window without any entries
 row_height = 30 # Height of each entry row
 
 
+def display_error(title, text):
+    """Displays the given error message in a GTK window. Requires `zenity`."""
+    subprocess.run([
+        'zenity', '--error',
+        '--width', '300',
+        '--title', title, 
+        '--text', text
+    ])
+
+
 def query(text):
     """Queries the daemon for a text analysis."""
-    response = requests.get(f'http://{host}:{port}/{text}').text
+    try:
+        response = requests.get(f'http://{host}:{port}/{text}').text
+    except requests.exceptions.ConnectionError:
+        display_error('Daemon not Reachable', 'Please ensure that daemon.py is running.')
+        sys.exit()
     segmentation = json.loads(response)
     return segmentation
+
 
 def add_tone(vowel, tone):
     """
@@ -38,6 +53,7 @@ def add_tone(vowel, tone):
         'ü': 'ǖǘǚǜü'
     }[vowel][tone-1]
 
+
 def parse_pinyin(syllable):
     """
     Converts numerical pinyin to accented pinyin.
@@ -48,6 +64,7 @@ def parse_pinyin(syllable):
     first_vowel = [(c in 'aeiouü') for c in syllable].index(True)
     syllable[first_vowel] = add_tone(syllable[first_vowel], tone)
     return ''.join(syllable)
+
 
 def limit_length(definitions, limit=70):
     """
@@ -62,17 +79,22 @@ def limit_length(definitions, limit=70):
         output.append(entry)
     return output
 
+
 def display_results(results):
     """
     Displays the given parse results in a graphical window.
     Assumes that `zenity` is installed.
     """
-    # Process raw segmentation from the daemon
-    data = [(
-        entry['character'],
-        ' '.join(map(parse_pinyin, entry['pinyin'])),
-        ' · '.join(limit_length(entry['meaning']))
-    ) for entry in results]
+    try:
+        # Process raw segmentation from the daemon
+        data = [(
+            entry['character'],
+            ' '.join(map(parse_pinyin, entry['pinyin'])),
+            ' · '.join(limit_length(entry['meaning']))
+        ) for entry in results]
+    except ValueError:
+        display_error('Parsing Failed', 'Please make sure that your input contains only simplified Chinese characters.')
+        sys.exit()
 
     # Flatten data for zenity
     window_data = []
