@@ -1,11 +1,17 @@
+#! /bin/python3
+# daemon.py - Local HTTP daemon for Chinese text segmentation.
+# Note that there is no error validation.
+# I wouldn't run this on a public-facing webserver.
+
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, unquote
 import json
 
-from colorama import Fore, Style
 from g2pc import G2pC
 
+# Use G2pC for Chinese segmentation
 segmenter = G2pC()
+
 
 def process_segment(segment):
     char, pos, pinyin, _, meaning, _ = segment
@@ -16,10 +22,12 @@ def process_segment(segment):
         'meaning': meaning[1:-1].split('/'),
     }
 
+
 class RequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
+        # Get the query text.
         query = unquote(urlparse(self.path).geturl())[1:]
-        print(f'[query] {Fore.BLUE}{query}{Style.RESET_ALL}')
+        print('[query]', query)
 
         segments = [
             process_segment(segment)
@@ -31,7 +39,10 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(response.encode())
 
+
+# Address for the local server
 host, port = address = ('localhost', 1337)
+
 daemon = HTTPServer(address, RequestHandler)
 print(f'Web server initialized at {host}:{port}')
 daemon.serve_forever()

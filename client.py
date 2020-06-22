@@ -1,3 +1,7 @@
+#! /bin/python3
+# client.py - Analyzes the given Chinese text and displays results graphically.
+# Usage: python3 client.py 中文文体
+
 import json
 import sys
 import subprocess
@@ -5,14 +9,21 @@ import subprocess
 import requests
 
 
+# Address of the daemon
 host, port = ('localhost', 1337)
 
 def query(text):
+    """Queries the daemon for a text analysis."""
     response = requests.get(f'http://{host}:{port}/{text}').text
     segmentation = json.loads(response)
     return segmentation
 
-def add_tone(char, tone):
+def add_tone(vowel, tone):
+    """
+    Adds the given (numerical) tone to a vowel.
+    >>> add_tone('a', 3)
+    'ǎ'
+    """
     return {
         'a': 'āáǎàa',
         'e': 'ēéěèe',
@@ -20,15 +31,24 @@ def add_tone(char, tone):
         'o': 'ōóǒòo',
         'u': 'ūúǔùu',
         'ü': 'ǖǘǚǜü'
-    }[char][tone-1]
+    }[vowel][tone-1]
 
 def parse_pinyin(syllable):
+    """
+    Converts numerical pinyin to accented pinyin.
+    >>> parse_pinyin('yan2')
+    'yán'
+    """
     syllable, tone = list(syllable[:-1]), int(syllable[-1])
     first_vowel = [(c in 'aeiouü') for c in syllable].index(True)
     syllable[first_vowel] = add_tone(syllable[first_vowel], tone)
     return ''.join(syllable)
 
 def limit_length(definitions, limit=70):
+    """
+    Returns an initial sublist (prefix) of `definitions` as long as possible
+    without exceeding `limit` characters total.
+    """
     output = []
     length = 0
     for entry in definitions:
@@ -38,6 +58,10 @@ def limit_length(definitions, limit=70):
     return output
 
 def display_results(results):
+    """
+    Displays the given parse results in a graphical window.
+    Assumes that `zenity` is installed.
+    """
     data = []
     for entry in results:
         data.append(entry['character'])
@@ -57,6 +81,7 @@ def display_results(results):
         *data
     ])
 
+# We want exactly one argument, the Chinese text to analyze
 if len(sys.argv) != 2:
     raise ValueError('Exactly one command-line argument should be provided!')
 
