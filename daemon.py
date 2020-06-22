@@ -7,6 +7,7 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, unquote
 import json
 
+from hanziconv import HanziConv
 from g2pc import G2pC
 
 from config import host, port, address
@@ -35,9 +36,10 @@ class RequestHandler(BaseHTTPRequestHandler):
         except:
             print('[error] Malformed Query')
 
+        simplified = HanziConv.toSimplified(query)
         segments = [
             process_segment(segment)
-            for segment in segmenter(query)
+            for segment in segmenter(simplified)
         ]
         response = json.dumps(segments)
 

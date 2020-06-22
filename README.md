@@ -13,6 +13,7 @@ This project requires `zenity` and `xclip` to interface with GTK,
 as well as the following packages on Python 3.6 or higher:
 - requests
 - g2pc
+- hanziconv
 
 ## Usage
 - Start `daemon.py`. You might have to edit `config.py` if the default port is taken.
