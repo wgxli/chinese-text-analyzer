@@ -8,9 +8,14 @@ import subprocess
 
 import requests
 
+from config import host, port, anki_integration
 
-# Address of the daemon
-host, port = ('localhost', 1337)
+
+# You may need to adjust the settings below
+# to get a good window size for your GTK setup
+base_height = 120 # Height of the popup window without any entries
+row_height = 30 # Height of each entry row
+
 
 def query(text):
     """Queries the daemon for a text analysis."""
@@ -62,25 +67,50 @@ def display_results(results):
     Displays the given parse results in a graphical window.
     Assumes that `zenity` is installed.
     """
-    data = []
-    for entry in results:
-        data.append(entry['character'])
-        data.append(' '.join(map(parse_pinyin, entry['pinyin'])))
-        data.append(' · '.join(limit_length(entry['meaning'])))
+    # Process raw segmentation from the daemon
+    data = [(
+        entry['character'],
+        ' '.join(map(parse_pinyin, entry['pinyin'])),
+        ' · '.join(limit_length(entry['meaning']))
+    ) for entry in results]
 
-    # You may have to alter the height computation below depending on your GTK setup
-    subprocess.run([
+    # Flatten data for zenity
+    window_data = []
+    for entry in data:
+        if anki_integration: window_data.append('')
+        window_data.extend(entry)
+        
+
+    # Open zenity window and get selections (if Anki integration active)
+    window_output = subprocess.run([
         'zenity',
         '--list',
         '--title', 'Chinese Analysis',
         '--width', '650',
-        '--height', str(120 + 29 * len(results)),
-        '--text', 'Breakdown of the selected text:',
+        '--height', str(base_height + row_height * len(results)),
+        *([
+            '--checklist',
+            '--text', 'Select any words to add them to Anki.',
+            '--column', 'Anki'
+        ] if anki_integration else
+        [
+            '--text', 'Breakdown of the selected text:',
+        ]),
         '--column', 'Word',
         '--column', 'Pinyin',
         '--column', 'Meaning',
-        *data
-    ])
+        *window_data
+    ], capture_output=True).stdout.decode()
+
+    # Add selected word to Anki csv
+    selected_words = [x for x in window_output.strip().split('|') if x]
+    if anki_integration and selected_words:
+        print('Adding', ', '.join(selected_words), 'to Anki')
+        with open('anki.csv', 'a') as f:
+            for word in selected_words:
+                entry = next(x for x in data if x[0] == word)
+                print(*entry, sep=',', file=f)
+
 
 # We want exactly one argument, the Chinese text to analyze
 if len(sys.argv) != 2:

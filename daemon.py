@@ -9,9 +9,8 @@ import json
 
 from g2pc import G2pC
 
+from config import host, port, address
 
-# Address for the local server
-host, port = address = ('localhost', 1337)
 
 # Use G2pC for Chinese segmentation
 segmenter = G2pC()
