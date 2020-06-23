@@ -5,10 +5,11 @@
 import json
 import sys
 import subprocess
+from pathlib import Path
 
 import requests
 
-from config import host, port, anki_integration
+from config import host, port, anki_integration, show_confirmation
 
 
 # You may need to adjust the settings below
@@ -18,6 +19,16 @@ row_height = 30 # Height of each entry row
 
 # Character limit for "meaning" column
 meaning_limit = 60
+
+anki_file = Path('anki.csv')
+
+
+# Get list of words already added to csv
+if anki_file.exists():
+    with open(anki_file, 'r') as f:
+        added = {line.split(',')[0] for line in f.readlines()}
+else:
+    added = set()
 
 
 def display_error(title, text):
@@ -134,14 +145,32 @@ def display_results(results):
         *window_data
     ], capture_output=True).stdout.decode()
 
-    # Add selected word to Anki csv
-    selected_words = [x for x in window_output.strip().split('|') if x]
+
+    # Add selected words to Anki csv
+    selected_words = set([x for x in window_output.strip().split('|') if x])
+
+    added_words = selected_words - added
+    existing_words = selected_words & added
+
     if anki_integration and selected_words:
-        print('Adding', ', '.join(selected_words), 'to Anki')
-        with open('anki.csv', 'a') as f:
-            for word in selected_words:
+        with open(anki_file, 'a') as f:
+            for word in added_words:
                 entry = next(x for x in data if x[0] == word)
                 print(*entry, sep=',', file=f)
+
+        if show_confirmation:
+            subprocess.run([
+                'zenity', '--info',
+                '--width', '200',
+                '--title', 'Words added', 
+                '--text', ''.join([
+                    'Added to Anki: ',
+                    ', '.join(added_words) or 'None',
+                    '\n',
+                    'Already Added: ',
+                    ', '.join(existing_words) or 'None'
+                ])
+            ])
 
 
 # We want exactly one argument, the Chinese text to analyze
