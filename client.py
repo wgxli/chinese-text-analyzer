@@ -73,10 +73,28 @@ def parse_pinyin(syllable):
     Converts numerical pinyin to accented pinyin.
     >>> parse_pinyin('yan2')
     'yán'
+    >>> parse_pinyin('xiang3')
+    'xiǎng'
     """
     syllable, tone = list(syllable[:-1].replace('u:', 'ü')), int(syllable[-1])
-    first_vowel = [(c in 'aeiouü') for c in syllable].index(True)
-    syllable[first_vowel] = add_tone(syllable[first_vowel], tone)
+
+    vowels = {c: i for (i, c) in enumerate(syllable) if (c in 'aeiouü')}
+    def place_accent(letter):
+        syllable[vowels[letter]] = add_tone(letter, tone)
+
+    # Following algorithm on Wikipedia
+    if len(vowels) == 1:
+        place_accent(list(vowels.keys())[0])
+    elif 'a' in vowels:
+        place_accent('a')
+    elif 'e' in vowels:
+        place_accent('e')
+    elif 'ou' in ''.join(syllable):
+        place_accent('o')
+    else:
+        second_vowel = syllable[list(sorted(vowels.values()))[1]]
+        place_accent(second_vowel)
+
     return ''.join(syllable)
 
 
