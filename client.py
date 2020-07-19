@@ -9,7 +9,7 @@ from pathlib import Path
 
 import requests
 
-from config import host, port, anki_integration, show_confirmation
+from config import host, port, anki_integration, anki_save_location, show_confirmation
 
 
 # You may need to adjust the settings below
@@ -20,7 +20,7 @@ row_height = 30 # Height of each entry row
 # Character limit for "meaning" column
 meaning_limit = 60
 
-anki_file = Path('anki.csv')
+anki_file = anki_save_location / 'anki.csv'
 
 
 # Get list of words already added to csv
@@ -156,7 +156,7 @@ def display_results(results):
         with open(anki_file, 'a') as f:
             for word in added_words:
                 entry = next(x for x in data if x[0] == word)
-                print(*entry, sep=',', file=f)
+                print(*entry, sep='\t', file=f)
 
         if show_confirmation:
             subprocess.run([
